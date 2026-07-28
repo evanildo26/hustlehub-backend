@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# Environment variables (never commit real secrets)
+.env
+
+# Locally generated TLS certificate/key (regenerate per machine)
+certs/
+
+# Runtime data
+src/data/users.json
+
+# Logs
+src/logs/*.log
+!src/logs/.gitkeep
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+*.log
+
+# Local AI assistant tooling config (machine-specific, not part of the submission)
+.claude/

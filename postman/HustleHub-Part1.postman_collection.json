@@ -1,0 +1,374 @@
+{
+  "info": {
+    "name": "HustleHub+ - Part 1 (Secure Foundations)",
+    "_postman_id": "hustlehub-part1-collection",
+    "description": "Registration and login endpoint tests for the HustleHub+ Part 1 backend, covering successful flows and invalid/malicious scenarios. Uses a self-signed local HTTPS certificate - in Postman, disable 'SSL certificate verification' under Settings > General before running (localhost only).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "https://localhost:5443/api", "type": "string" },
+    { "key": "token", "value": "", "type": "string" },
+    { "key": "testEmail", "value": "postman.tester@example.com", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{baseUrl}}/health", "host": ["{{baseUrl}}"], "path": ["health"] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+              "pm.test('API reports running', () => pm.expect(pm.response.json().success).to.eql(true));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Register - Success (Freelancer)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Thandiwe Nkosi\",\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"StrongPass1!\",\n  \"role\": \"freelancer\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 201', () => pm.response.to.have.status(201));",
+              "pm.test('Response contains created user, no password field', () => {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body.success).to.eql(true);",
+              "  pm.expect(body.data).to.have.property('id');",
+              "  pm.expect(body.data).to.not.have.property('password');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Register - Fails on Duplicate Email",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Thandiwe Nkosi\",\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"StrongPass1!\",\n  \"role\": \"freelancer\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 409 (Conflict)', () => pm.response.to.have.status(409));",
+              "pm.test('No internal details leaked', () => {",
+              "  const text = pm.response.text();",
+              "  pm.expect(text).to.not.include('at ');",
+              "  pm.expect(text).to.not.include('.js:');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Register - Fails on Invalid Email",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Bad Email\",\n  \"email\": \"not-an-email\",\n  \"password\": \"StrongPass1!\",\n  \"role\": \"client\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 400', () => pm.response.to.have.status(400));",
+              "pm.test('Error mentions email field', () => {",
+              "  const body = pm.response.json();",
+              "  pm.expect(JSON.stringify(body.errors)).to.include('email');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Register - Fails on Weak Password",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Weak Password\",\n  \"email\": \"weakpassword@example.com\",\n  \"password\": \"abc\",\n  \"role\": \"client\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 400', () => pm.response.to.have.status(400));",
+              "pm.test('Password never echoed back', () => {",
+              "  pm.expect(pm.response.text()).to.not.include('abc');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Register - Fails on Missing Fields",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"missingfields@example.com\"\n}" },
+        "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 400', () => pm.response.to.have.status(400));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Register - Rejects Self-Assigned Admin Role",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Sneaky Admin\",\n  \"email\": \"sneakyadmin@example.com\",\n  \"password\": \"StrongPass1!\",\n  \"role\": \"admin\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 400 - admin cannot self-register', () => pm.response.to.have.status(400));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Register - Rejects Script Injection in Name",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"<script>alert(1)</script>\",\n  \"email\": \"xsstest@example.com\",\n  \"password\": \"StrongPass1!\",\n  \"role\": \"client\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 400 - malicious input rejected', () => pm.response.to.have.status(400));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Login - Success",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"StrongPass1!\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+              "pm.test('Response contains a JWT', () => {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body.token).to.be.a('string');",
+              "  pm.expect(body.token.split('.').length).to.eql(3);",
+              "  pm.collectionVariables.set('token', body.token);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Login - Fails on Wrong Password",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"TotallyWrongPassword1!\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 401', () => pm.response.to.have.status(401));",
+              "pm.test('Generic message (does not reveal which field was wrong)', () => {",
+              "  pm.expect(pm.response.json().message).to.eql('Invalid email or password.');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Login - Fails on Non-Existent User",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"doesnotexist@example.com\",\n  \"password\": \"WhateverPassword1!\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 401', () => pm.response.to.have.status(401));",
+              "pm.test('Same generic message as wrong-password case', () => {",
+              "  pm.expect(pm.response.json().message).to.eql('Invalid email or password.');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Protected Route - GET /users/me (No Token)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{baseUrl}}/users/me", "host": ["{{baseUrl}}"], "path": ["users", "me"] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": ["pm.test('Status code is 401 without a token', () => pm.response.to.have.status(401));"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Protected Route - GET /users/me (Invalid Token)",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer this.is.not-a-valid-jwt" }],
+        "url": { "raw": "{{baseUrl}}/users/me", "host": ["{{baseUrl}}"], "path": ["users", "me"] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": ["pm.test('Status code is 401 with a malformed token', () => pm.response.to.have.status(401));"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Protected Route - GET /users/me (Valid Token)",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": { "raw": "{{baseUrl}}/users/me", "host": ["{{baseUrl}}"], "path": ["users", "me"] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 200 with a valid token', () => pm.response.to.have.status(200));",
+              "pm.test('Returns the authenticated user, no password field', () => {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body.data.email).to.eql(pm.collectionVariables.get('testEmail'));",
+              "  pm.expect(body.data).to.not.have.property('password');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Unknown Route - 404",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{baseUrl}}/this-does-not-exist", "host": ["{{baseUrl}}"], "path": ["this-does-not-exist"] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 404', () => pm.response.to.have.status(404));",
+              "pm.test('No stack trace or file path leaked', () => {",
+              "  const text = pm.response.text();",
+              "  pm.expect(text).to.not.include('.js:');",
+              "  pm.expect(text).to.not.include('node_modules');",
+              "});"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

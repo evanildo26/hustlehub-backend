@@ -1,0 +1,34 @@
+{
+  "name": "hustlehub-backend",
+  "version": "1.0.0",
+  "description": "HustleHub+ secure freelance marketplace - Part 1: Secure Backend Foundations (INSY7314/APDS7311 POE)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "generate-cert": "node scripts/generateCert.js",
+    "test": "echo \"Automated backend tests are introduced in Part 2 of the POE\" && exit 0"
+  },
+  "keywords": ["hustlehub", "express", "jwt", "security"],
+  "author": "Evanildo Julio Chaves Jose (ST10437401)",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.4.0",
+    "express-validator": "^7.2.0",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4",
+    "selfsigned": "^2.4.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
