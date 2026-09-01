@@ -3,6 +3,9 @@
 **Module:** Information Systems 3D (INSY7314/w) / Application Development Security (APDS7311/w)
 **POE Part:** 1 of 3 — Secure Foundations
 **Student:** Evanildo Julio Chaves Jose (ST10437401)
+**Student:** Mohamed Ahmed (ST10448258)
+**Student:** Tawfeeq Gallie (ST10434369)
+**Student:** Fay-yaad.Parker (ST10434066)
 **GitHub:** [evanildo26](https://github.com/evanildo26)
 **Stack:** MERN (MongoDB · Express · React · Node.js) — Part 1 delivers the secure Express/Node.js backend foundation that the rest of the stack will be built on.
 
@@ -119,7 +122,7 @@ hustlehub-backend/
 **Why this layout:** routes only describe *which* URL maps to *which* handler; controllers hold business logic; middleware holds cross-cutting concerns (validation, auth, rate limiting, errors); models are the only code that touches storage. This separation is what lets, for example, the storage layer be swapped for MongoDB in Part 2 without touching a single controller, and lets new protected routes reuse `protect`/`restrictTo` without re-implementing token verification.
 
 ---
-
+## POSTMAN COLLECTION LINK:https://warped-robot-288177.postman.co/workspace/43867db3-a67a-4fec-8b7f-9b889d68f4f0/collection/56939195-bc8ff15d-4daa-4340-a8e4-16e556ec9f58?action=share&source=copy-link&creator=56939195
 ## 4. Security Decisions
 
 ### 4.1 Password Hashing
