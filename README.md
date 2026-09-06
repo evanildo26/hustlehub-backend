@@ -8,6 +8,7 @@
 **Student:** Fay-yaad.Parker (ST10434066)
 **GitHub:** [evanildo26](https://github.com/evanildo26)
 **Stack:** MERN (MongoDB · Express · React · Node.js) — Part 1 delivers the secure Express/Node.js backend foundation that the rest of the stack will be built on.
+## Video Link: https://www.youtube.com/watch?v=HqpkX3bnkW0
 
 ---
 
